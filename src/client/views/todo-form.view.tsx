@@ -23,8 +23,9 @@ export function TodoFormView() {
   })
 
   return (
-    <div>
+    <div className="todo-form-card">
       <form
+        className="todo-form"
         onSubmit={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -35,6 +36,7 @@ export function TodoFormView() {
           {(field) => (
             <div>
               <input
+                type="text"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
@@ -60,7 +62,7 @@ export function TodoFormView() {
           )}
         </form.Field>
 
-        <button type="submit" disabled={createTodo.isPending}>
+        <button type="submit" className="btn-add-todo" disabled={createTodo.isPending}>
           {createTodo.isPending ? 'Adding...' : 'Add Todo'}
         </button>
       </form>

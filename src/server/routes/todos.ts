@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { todos } from '../../db/schema'
 import {
   createTodoSchema,
@@ -8,10 +8,16 @@ import {
   todoIdSchema,
 } from '../../shared/schemas/todo.schema'
 import type { Database } from '../../db/client'
+import type { Auth } from '../auth'
 
 type Env = {
-  Bindings: { DATABASE_URL: string }
-  Variables: { db: Database }
+  Bindings: { DATABASE_URL: string; BETTER_AUTH_SECRET: string }
+  Variables: {
+    db: Database
+    auth: Auth
+    user: { id: string; name: string; email: string } | null
+    session: unknown
+  }
 }
 
 export const todoRoutes = new Hono<Env>()
@@ -19,7 +25,12 @@ export const todoRoutes = new Hono<Env>()
   // GET /api/todos
   .get('/', async (c) => {
     const db = c.get('db')
-    const result = await db.select().from(todos).orderBy(todos.createdAt)
+    const user = c.get('user')
+    const result = await db
+      .select()
+      .from(todos)
+      .where(eq(todos.userId, user!.id))
+      .orderBy(todos.createdAt)
     return c.json(result)
   })
 
@@ -27,7 +38,11 @@ export const todoRoutes = new Hono<Env>()
   .get('/:id', zValidator('param', todoIdSchema), async (c) => {
     const { id } = c.req.valid('param')
     const db = c.get('db')
-    const [todo] = await db.select().from(todos).where(eq(todos.id, id))
+    const user = c.get('user')
+    const [todo] = await db
+      .select()
+      .from(todos)
+      .where(and(eq(todos.id, id), eq(todos.userId, user!.id)))
     if (!todo) return c.json({ error: 'Not found' }, 404)
     return c.json(todo)
   })
@@ -36,7 +51,8 @@ export const todoRoutes = new Hono<Env>()
   .post('/', zValidator('json', createTodoSchema), async (c) => {
     const data = c.req.valid('json')
     const db = c.get('db')
-    const [todo] = await db.insert(todos).values(data).returning()
+    const user = c.get('user')
+    const [todo] = await db.insert(todos).values({ ...data, userId: user!.id }).returning()
     return c.json(todo, 201)
   })
 
@@ -45,10 +61,11 @@ export const todoRoutes = new Hono<Env>()
     const { id } = c.req.valid('param')
     const data = c.req.valid('json')
     const db = c.get('db')
+    const user = c.get('user')
     const [todo] = await db
       .update(todos)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(todos.id, id))
+      .where(and(eq(todos.id, id), eq(todos.userId, user!.id)))
       .returning()
     if (!todo) return c.json({ error: 'Not found' }, 404)
     return c.json(todo)
@@ -58,7 +75,11 @@ export const todoRoutes = new Hono<Env>()
   .delete('/:id', zValidator('param', todoIdSchema), async (c) => {
     const { id } = c.req.valid('param')
     const db = c.get('db')
-    const [todo] = await db.delete(todos).where(eq(todos.id, id)).returning()
+    const user = c.get('user')
+    const [todo] = await db
+      .delete(todos)
+      .where(and(eq(todos.id, id), eq(todos.userId, user!.id)))
+      .returning()
     if (!todo) return c.json({ error: 'Not found' }, 404)
     return c.json({ deleted: true })
   })

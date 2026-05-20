@@ -9,6 +9,7 @@ directory = "./dist/client"
 [vars]
 # Non-secret env vars
 
-# Secrets (set via `wrangler secret put DATABASE_URL`)
+# Secrets (set via `wrangler secret put <NAME>`)
 # DATABASE_URL = "..."
-# JWT_SECRET = "..."
+# BETTER_AUTH_SECRET = "..."
+# BETTER_AUTH_URL = "..."
