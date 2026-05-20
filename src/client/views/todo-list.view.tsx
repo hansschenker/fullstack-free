@@ -17,13 +17,13 @@ export function TodoListView() {
   const dispatch = useTodoDispatch()
   const filtered = filterTodos(todos, filter)
 
-  if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error: {error.message}</div>
+  if (isLoading) return <div className="todo-loading">Loading...</div>
+  if (error) return <div className="todo-error">Error: {error.message}</div>
 
   return (
-    <section>
+    <section className="todo-section">
       <FilterBar current={filter} onFilter={(f) => dispatch({ type: 'SET_FILTER', filter: f })} />
-      <ul>
+      <ul className="todo-list">
         {filtered.map((todo) => (
           <TodoItem key={todo.id} todo={todo} />
         ))}
@@ -36,9 +36,9 @@ export function TodoListView() {
 function FilterBar({ current, onFilter }: { current: TodoFilter; onFilter: (f: TodoFilter) => void }) {
   const filters: TodoFilter[] = ['all', 'active', 'completed']
   return (
-    <nav>
+    <nav className="filter-bar">
       {filters.map((f) => (
-        <button key={f} onClick={() => onFilter(f)} data-active={f === current}>
+        <button key={f} className="filter-btn" onClick={() => onFilter(f)} data-active={f === current}>
           {f}
         </button>
       ))}
@@ -51,14 +51,15 @@ function TodoItem({ todo }: { todo: Todo }) {
   const remove = useDeleteTodo()
 
   return (
-    <li>
+    <li className="todo-item">
       <input
         type="checkbox"
+        className="todo-checkbox"
         checked={todo.isComplete}
         onChange={() => toggle.mutate({ id: todo.id, isComplete: !todo.isComplete })}
       />
-      <span data-complete={todo.isComplete}>{todo.title}</span>
-      <button onClick={() => remove.mutate(todo.id)} disabled={remove.isPending}>
+      <span className="todo-title" data-complete={todo.isComplete}>{todo.title}</span>
+      <button className="btn-delete-todo" onClick={() => remove.mutate(todo.id)} disabled={remove.isPending}>
         ✕
       </button>
     </li>
@@ -71,7 +72,7 @@ function EmptyState({ filter }: { filter: TodoFilter }) {
     active: 'All caught up!',
     completed: 'Nothing completed yet.',
   }
-  return <p>{messages[filter]}</p>
+  return <p className="todo-empty">{messages[filter]}</p>
 }
 
 function filterTodos(todos: Todo[], filter: TodoFilter): Todo[] {

@@ -1,11 +1,12 @@
 # Fullstack Free
 
-A fullstack web framework built on **TanStack**, **Hono**, and **Cloudflare Workers**.
+A fullstack web framework built on **TanStack**, **Hono**, and **Cloudflare Workers**, with **better-auth** for authentication.
 
 ## Stack
 
 | Layer | Technology | Role |
 |---|---|---|
+| Authentication | better-auth | Email/password auth, sessions, user management |
 | SPA Runtime | React + MVU Architecture | UI rendering, state management |
 | Client Data | TanStack Query | Cache, optimistic writes |
 | Client Forms | TanStack Form + Zod | Validation, field state, submission |
@@ -34,8 +35,11 @@ Create a `.dev.vars` file for local development:
 
 ```
 DATABASE_URL=postgresql://...
-JWT_SECRET=your-secret
+BETTER_AUTH_SECRET=your-secret-at-least-32-chars-long
+BETTER_AUTH_URL=http://localhost:5173
 ```
+
+Generate a secret with `openssl rand -base64 32`.
 
 ### Database Setup
 
@@ -61,6 +65,25 @@ npm run preview
 npm run build:client  # Build the SPA
 npm run deploy        # Deploy to Cloudflare Workers
 ```
+
+Set production secrets:
+
+```bash
+wrangler secret put DATABASE_URL
+wrangler secret put BETTER_AUTH_SECRET
+wrangler secret put BETTER_AUTH_URL
+```
+
+## Authentication
+
+This app uses [better-auth](https://better-auth.com) for authentication:
+
+- **Email & Password** sign up / sign in
+- **Session management** via secure cookies
+- **Protected API routes** — all `/api/todos/*` routes require authentication
+- **Per-user todos** — each user only sees their own todos
+
+Auth tables (`user`, `session`, `account`, `verification`) are defined in the Drizzle schema and managed alongside application tables.
 
 ## Architecture
 
