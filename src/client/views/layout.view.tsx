@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { authClient } from '../auth-client'
 
 type LayoutProps = {
@@ -7,7 +8,10 @@ type LayoutProps = {
 }
 
 export function LayoutView({ children, userName }: LayoutProps) {
+  const queryClient = useQueryClient()
+
   const handleSignOut = async () => {
+    queryClient.clear()
     await authClient.signOut()
   }
 
