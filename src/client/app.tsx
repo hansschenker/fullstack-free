@@ -28,7 +28,7 @@ export function App() {
     )
   }
 
-  if (!session.data) {
+  if (!session.data?.user) {
     return <AuthView />
   }
 
