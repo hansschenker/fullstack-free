@@ -1,0 +1,14 @@
+name = "fullstack-mvu-app"
+main = "src/server/entry.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist/client"
+
+[vars]
+# Non-secret env vars
+
+# Secrets (set via `wrangler secret put DATABASE_URL`)
+# DATABASE_URL = "..."
+# JWT_SECRET = "..."
